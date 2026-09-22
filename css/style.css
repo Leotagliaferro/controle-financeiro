@@ -568,6 +568,9 @@ h2 { font-size: 1.05rem; font-weight: 700; }
   place-items: center;
   padding: 1.25rem;
 }
+.login-gate[hidden] {
+  display: none !important;
+}
 .login-card {
   width: min(400px, 100%);
   background: var(--surface);

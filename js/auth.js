@@ -56,15 +56,25 @@ function initAuth() {
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     err.hidden = true;
-    const user = document.getElementById('login-user').value;
-    const pass = document.getElementById('login-pass').value;
-    const ok = await tryLogin(user, pass);
-    if (!ok) {
-      err.textContent = 'Usuário ou senha incorretos.';
+    if (!globalThis.crypto?.subtle) {
+      err.textContent = 'Abra o site via HTTPS (ou localhost), não por arquivo local.';
       err.hidden = false;
       return;
     }
-    unlockApp();
+    const user = document.getElementById('login-user').value;
+    const pass = document.getElementById('login-pass').value;
+    try {
+      const ok = await tryLogin(user, pass);
+      if (!ok) {
+        err.textContent = 'Usuário ou senha incorretos.';
+        err.hidden = false;
+        return;
+      }
+      unlockApp();
+    } catch {
+      err.textContent = 'Não foi possível validar o login neste ambiente.';
+      err.hidden = false;
+    }
   });
 }
 

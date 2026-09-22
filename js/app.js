@@ -478,7 +478,10 @@ function refreshAll() {
 
 function bindEvents() {
   qsa('.nav-btn').forEach((btn) => {
-    btn.addEventListener('click', () => setView(btn.dataset.view));
+    btn.addEventListener('click', () => {
+      if (!btn.dataset.view) return;
+      setView(btn.dataset.view);
+    });
   });
 
   qs('#btn-menu').addEventListener('click', () => {
