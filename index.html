@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Controle financeiro pessoal — entradas, saídas e saldo no navegador." />
+  <title>Controle Financeiro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a9f6e'/%3E%3Cpath d='M8 18h16M16 10v12' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <strong>Finanças</strong>
+          <span>Pessoal</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Principal">
+        <button type="button" class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button type="button" class="nav-btn" data-view="transactions">Lançamentos</button>
+        <button type="button" class="nav-btn" data-view="recurring">Fixos</button>
+        <button type="button" class="nav-btn" data-view="annual">Resumo anual</button>
+        <button type="button" class="nav-btn" data-view="settings">Configurações</button>
+      </nav>
+      <button type="button" class="btn btn-primary btn-block" id="btn-new-tx">+ Novo lançamento</button>
+    </aside>
+
+    <div class="main-wrap">
+      <header class="topbar">
+        <button type="button" class="icon-btn mobile-only" id="btn-menu" aria-label="Abrir menu">☰</button>
+        <div class="month-nav" role="group" aria-label="Navegação de mês">
+          <button type="button" class="icon-btn" id="btn-prev-month" aria-label="Mês anterior">←</button>
+          <label class="month-select-wrap">
+            <span class="sr-only">Mês</span>
+            <select id="month-select"></select>
+          </label>
+          <button type="button" class="icon-btn" id="btn-next-month" aria-label="Próximo mês">→</button>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="icon-btn" id="btn-theme" aria-label="Alternar tema">◐</button>
+          <button type="button" class="btn btn-primary" id="btn-new-tx-top">+ Novo</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- DASHBOARD -->
+        <section class="view active" id="view-dashboard" aria-label="Dashboard">
+          <div class="page-head">
+            <h1>Resumo do mês</h1>
+            <p class="muted" id="dashboard-subtitle">Acompanhe entradas, saídas e saldo.</p>
+          </div>
+
+          <article class="panel demo-banner" id="demo-banner" hidden>
+            <h2>Você está vendo dados de demonstração</h2>
+            <p class="muted">Esses valores são fictícios (salário, freela, aluguel…). Para usar de verdade, limpe tudo e comece do zero.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="btn-clear-demo">Limpar demo e começar do zero</button>
+            </div>
+          </article>
+
+          <article class="panel setup-panel" id="setup-fixed" hidden>
+            <h2>Comece pelo que se repete todo mês</h2>
+            <p class="muted">Cadastre salário e outras entradas/despesas fixas uma vez — o sistema lança sozinho em cada mês.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="btn-setup-salary">Cadastrar salário</button>
+              <button type="button" class="btn btn-ghost" id="btn-setup-income">Outra entrada fixa</button>
+              <button type="button" class="btn btn-ghost" id="btn-setup-expense">Despesa fixa</button>
+              <button type="button" class="btn btn-ghost" id="btn-goto-fixos">Ver todos os fixos</button>
+            </div>
+          </article>
+
+          <div class="metrics">
+            <article class="metric-card hero">
+              <span class="metric-label">Saldo do mês</span>
+              <strong class="metric-value" id="metric-balance">R$ 0,00</strong>
+              <span class="metric-hint">Entradas − Saídas</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Entradas</span>
+              <strong class="metric-value positive" id="metric-income">R$ 0,00</strong>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Saídas</span>
+              <strong class="metric-value negative" id="metric-expense">R$ 0,00</strong>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Saldo acumulado</span>
+              <strong class="metric-value" id="metric-accumulated">R$ 0,00</strong>
+              <span class="metric-hint">Inclui meses anteriores</span>
+            </article>
+          </div>
+
+          <div class="grid-2">
+            <article class="panel">
+              <h2>Economia do mês</h2>
+              <p class="big-number" id="metric-savings">R$ 0,00</p>
+              <p class="muted" id="metric-savings-rate">—</p>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h2>Meta de economia</h2>
+                <button type="button" class="link-btn" id="btn-edit-goal">Editar</button>
+              </div>
+              <div class="goal-stats">
+                <div><span class="muted">Meta</span><strong id="goal-target">R$ 0,00</strong></div>
+                <div><span class="muted">Economizado</span><strong id="goal-saved">R$ 0,00</strong></div>
+                <div><span class="muted">Progresso</span><strong id="goal-percent">0%</strong></div>
+              </div>
+              <div class="progress" aria-hidden="true"><span id="goal-bar"></span></div>
+            </article>
+          </div>
+
+          <div class="grid-charts">
+            <article class="panel">
+              <h2>Entradas × Saídas</h2>
+              <div class="chart-box"><canvas id="chart-income-expense"></canvas></div>
+            </article>
+            <article class="panel">
+              <h2>Gastos por categoria</h2>
+              <div class="chart-box"><canvas id="chart-categories"></canvas></div>
+            </article>
+            <article class="panel panel-wide">
+              <h2>Evolução do saldo</h2>
+              <div class="chart-box"><canvas id="chart-balance"></canvas></div>
+            </article>
+          </div>
+
+          <article class="panel">
+            <h2>Para onde meu dinheiro está indo?</h2>
+            <ul class="category-list" id="category-breakdown"></ul>
+          </article>
+        </section>
+
+        <!-- TRANSACTIONS -->
+        <section class="view" id="view-transactions" aria-label="Lançamentos" hidden>
+          <div class="page-head row">
+            <div>
+              <h1>Lançamentos</h1>
+              <p class="muted">Todos os movimentos do mês selecionado.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-new-tx-list">+ Novo lançamento</button>
+          </div>
+
+          <div class="filters panel">
+            <label class="field grow">
+              <span>Buscar</span>
+              <input type="search" id="filter-query" placeholder="Ex.: mercado, freela…" />
+            </label>
+            <label class="field">
+              <span>Tipo</span>
+              <select id="filter-type">
+                <option value="all">Todos</option>
+                <option value="income">Entrada</option>
+                <option value="expense">Saída</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Categoria</span>
+              <select id="filter-category"><option value="all">Todas</option></select>
+            </label>
+            <label class="field">
+              <span>De</span>
+              <input type="date" id="filter-from" />
+            </label>
+            <label class="field">
+              <span>Até</span>
+              <input type="date" id="filter-to" />
+            </label>
+          </div>
+
+          <div class="table-wrap panel">
+            <table class="data-table" id="tx-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Tipo</th>
+                  <th class="num">Valor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tx-tbody"></tbody>
+            </table>
+            <div class="cards-list" id="tx-cards" aria-hidden="true"></div>
+            <p class="empty-hint" id="tx-empty" hidden>Nenhum lançamento encontrado.</p>
+          </div>
+        </section>
+
+        <!-- FIXOS (entradas e despesas que se repetem) -->
+        <section class="view" id="view-recurring" aria-label="Fixos" hidden>
+          <div class="page-head">
+            <h1>Fixos do mês</h1>
+            <p class="muted">Cadastre aqui o que se repete todo mês. Freelas e gastos variáveis entram em <strong>Lançamentos</strong>.</p>
+          </div>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Entradas fixas</h2>
+                <p class="muted tiny">Salário, pensão, renda mensal…</p>
+              </div>
+              <button type="button" class="btn btn-primary" id="btn-new-fixed-income">+ Entrada fixa</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Dia</th>
+                    <th class="num">Valor</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="fixed-income-tbody"></tbody>
+              </table>
+              <div class="cards-list" id="fixed-income-cards"></div>
+              <p class="empty-hint" id="fixed-income-empty" hidden>Nenhuma entrada fixa. Cadastre seu salário aqui.</p>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Despesas fixas</h2>
+                <p class="muted tiny">Aluguel, internet, assinaturas…</p>
+              </div>
+              <button type="button" class="btn btn-primary" id="btn-new-fixed-expense">+ Despesa fixa</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Dia</th>
+                    <th class="num">Valor</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="fixed-expense-tbody"></tbody>
+              </table>
+              <div class="cards-list" id="fixed-expense-cards"></div>
+              <p class="empty-hint" id="fixed-expense-empty" hidden>Nenhuma despesa fixa cadastrada.</p>
+            </div>
+          </article>
+        </section>
+
+        <!-- ANNUAL -->
+        <section class="view" id="view-annual" aria-label="Resumo anual" hidden>
+          <div class="page-head row">
+            <div>
+              <h1>Resumo anual</h1>
+              <p class="muted">Desempenho mês a mês.</p>
+            </div>
+            <label class="field inline">
+              <span class="sr-only">Ano</span>
+              <select id="annual-year"></select>
+            </label>
+          </div>
+          <article class="panel">
+            <h2>Entradas × Saídas por mês</h2>
+            <div class="chart-box tall"><canvas id="chart-annual"></canvas></div>
+          </article>
+          <div class="table-wrap panel">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mês</th>
+                  <th class="num">Entradas</th>
+                  <th class="num">Saídas</th>
+                  <th class="num">Saldo</th>
+                </tr>
+              </thead>
+              <tbody id="annual-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="view" id="view-settings" aria-label="Configurações" hidden>
+          <div class="page-head">
+            <h1>Configurações</h1>
+            <p class="muted">Backup, meta, tema e dados.</p>
+          </div>
+          <div class="settings-grid">
+            <article class="panel">
+              <h2>Backup</h2>
+              <p class="muted">Seus dados ficam só neste navegador. Exporte com frequência.</p>
+              <div class="btn-row">
+                <button type="button" class="btn btn-primary" id="btn-export-json">Exportar backup</button>
+                <label class="btn btn-ghost file-btn">
+                  Importar backup
+                  <input type="file" id="input-import" accept="application/json,.json" hidden />
+                </label>
+                <button type="button" class="btn btn-ghost" id="btn-export-csv">Exportar CSV</button>
+              </div>
+            </article>
+            <article class="panel">
+              <h2>Meta de economia mensal</h2>
+              <label class="field">
+                <span>Valor da meta (R$)</span>
+                <input type="number" id="settings-goal" min="0" step="0.01" />
+              </label>
+              <button type="button" class="btn btn-primary" id="btn-save-goal">Salvar meta</button>
+            </article>
+            <article class="panel">
+              <h2>Dados de demonstração</h2>
+              <p class="muted">Carrega exemplos fictícios (salário, freela, aluguel…). Não mistura com dados reais se a lista já tiver lançamentos — confirme antes.</p>
+              <button type="button" class="btn btn-ghost" id="btn-load-demo">Carregar demonstração</button>
+            </article>
+            <article class="panel danger-zone">
+              <h2>Zona de risco</h2>
+              <p class="muted">Apaga permanentemente todos os dados deste navegador.</p>
+              <button type="button" class="btn btn-danger" id="btn-clear-all">Limpar todos os dados</button>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: transaction -->
+  <dialog class="modal" id="modal-tx">
+    <form method="dialog" id="form-tx" novalidate>
+      <header class="modal-head">
+        <h2 id="modal-tx-title">Novo lançamento</h2>
+        <button type="button" class="icon-btn" data-close="modal-tx" aria-label="Fechar">✕</button>
+      </header>
+      <input type="hidden" id="tx-id" />
+      <div class="modal-body">
+        <div class="type-toggle" role="group" aria-label="Tipo">
+          <label><input type="radio" name="tx-type" value="income" checked /> Entrada</label>
+          <label><input type="radio" name="tx-type" value="expense" /> Saída</label>
+        </div>
+        <label class="field">
+          <span>Descrição</span>
+          <input type="text" id="tx-description" required maxlength="120" placeholder="Ex.: Mercado" />
+        </label>
+        <div class="grid-2-fields">
+          <label class="field">
+            <span>Valor (R$)</span>
+            <input type="number" id="tx-amount" required min="0.01" step="0.01" placeholder="0,00" />
+          </label>
+          <label class="field">
+            <span>Data</span>
+            <input type="date" id="tx-date" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>Categoria</span>
+          <select id="tx-category" required></select>
+        </label>
+        <div class="inline-add">
+          <input type="text" id="tx-new-category" placeholder="Nova categoria…" maxlength="40" />
+          <button type="button" class="btn btn-ghost" id="btn-add-category">Adicionar</button>
+        </div>
+        <label class="field">
+          <span>Observação <em>(opcional)</em></span>
+          <textarea id="tx-note" rows="2" maxlength="300"></textarea>
+        </label>
+        <p class="form-error" id="tx-error" hidden></p>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close="modal-tx">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- MODAL: recurring -->
+  <dialog class="modal" id="modal-recurring">
+    <form method="dialog" id="form-recurring" novalidate>
+      <header class="modal-head">
+        <h2 id="modal-recurring-title">Novo item fixo</h2>
+        <button type="button" class="icon-btn" data-close="modal-recurring" aria-label="Fechar">✕</button>
+      </header>
+      <input type="hidden" id="rec-id" />
+      <div class="modal-body">
+        <div class="type-toggle" id="rec-type-toggle" role="group" aria-label="Tipo">
+          <label><input type="radio" name="rec-type" value="income" /> Entrada fixa</label>
+          <label><input type="radio" name="rec-type" value="expense" checked /> Despesa fixa</label>
+        </div>
+        <label class="field">
+          <span>Descrição</span>
+          <input type="text" id="rec-description" required maxlength="120" />
+        </label>
+        <div class="grid-2-fields">
+          <label class="field">
+            <span>Valor (R$)</span>
+            <input type="number" id="rec-amount" required min="0.01" step="0.01" />
+          </label>
+          <label class="field">
+            <span>Todo dia</span>
+            <input type="number" id="rec-day" required min="1" max="31" value="5" />
+          </label>
+        </div>
+        <label class="field">
+          <span>Categoria</span>
+          <select id="rec-category" required></select>
+        </label>
+        <label class="field">
+          <span>Observação <em>(opcional)</em></span>
+          <textarea id="rec-note" rows="2" maxlength="300"></textarea>
+        </label>
+        <p class="form-error" id="rec-error" hidden></p>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close="modal-recurring">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- MODAL: goal -->
+  <dialog class="modal modal-sm" id="modal-goal">
+    <form method="dialog" id="form-goal">
+      <header class="modal-head">
+        <h2>Meta de economia</h2>
+        <button type="button" class="icon-btn" data-close="modal-goal" aria-label="Fechar">✕</button>
+      </header>
+      <div class="modal-body">
+        <label class="field">
+          <span>Valor mensal (R$)</span>
+          <input type="number" id="goal-input" min="0" step="0.01" required />
+        </label>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close="modal-goal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ONBOARDING -->
+  <dialog class="modal" id="modal-onboard">
+    <div class="modal-body onboard">
+      <span class="brand-mark lg" aria-hidden="true"></span>
+      <h2>Bem-vindo ao Controle Financeiro</h2>
+      <p>Acompanhe entradas, saídas e para onde o dinheiro está indo — tudo no seu navegador, sem conta e sem servidor.</p>
+      <div class="btn-row center">
+        <button type="button" class="btn btn-primary" id="btn-start-empty">Começar do zero</button>
+        <button type="button" class="btn btn-ghost" id="btn-start-demo">Ver demonstração</button>
+      </div>
+      <p class="tiny muted">Os dados de demonstração são fictícios e podem ser apagados a qualquer momento.</p>
+    </div>
+  </dialog>
+
+  <div class="overlay" id="sidebar-overlay" hidden></div>
+  <div class="toast" id="toast" hidden role="status"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
