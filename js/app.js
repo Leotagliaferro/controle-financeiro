@@ -704,4 +704,14 @@ function init() {
   }
 }
 
-init();
+function revealApp() {
+  const root = qs('#app-root');
+  if (root) root.hidden = false;
+  init();
+}
+
+if (document.body.classList.contains('authed')) {
+  revealApp();
+} else {
+  window.addEventListener('finance-authed', revealApp, { once: true });
+}

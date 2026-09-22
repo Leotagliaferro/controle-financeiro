@@ -12,7 +12,25 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a9f6e'/%3E%3Cpath d='M8 18h16M16 10v12' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E" />
 </head>
 <body>
-  <div class="app">
+  <div class="login-gate" id="login-gate">
+    <form class="login-card" id="form-login" autocomplete="username">
+      <span class="brand-mark lg" aria-hidden="true"></span>
+      <h1>Controle Financeiro</h1>
+      <p class="muted">Acesso restrito. Entre com seu usuário e senha.</p>
+      <label class="field">
+        <span>Usuário</span>
+        <input type="text" id="login-user" name="username" required autocomplete="username" />
+      </label>
+      <label class="field">
+        <span>Senha</span>
+        <input type="password" id="login-pass" name="password" required autocomplete="current-password" />
+      </label>
+      <p class="form-error" id="login-error" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+    </form>
+  </div>
+
+  <div class="app" id="app-root" hidden>
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
@@ -27,6 +45,7 @@
         <button type="button" class="nav-btn" data-view="recurring">Fixos</button>
         <button type="button" class="nav-btn" data-view="annual">Resumo anual</button>
         <button type="button" class="nav-btn" data-view="settings">Configurações</button>
+        <button type="button" class="nav-btn nav-logout" id="btn-logout">Sair</button>
       </nav>
       <button type="button" class="btn btn-primary btn-block" id="btn-new-tx">+ Novo lançamento</button>
     </aside>
@@ -464,6 +483,7 @@
   <script src="js/transactions.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/dashboard.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

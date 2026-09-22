@@ -562,6 +562,36 @@ h2 { font-size: 1.05rem; font-weight: 700; }
   grid-template-columns: 1fr 1fr;
   gap: 0.9rem;
 }
+.login-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+.login-card {
+  width: min(400px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1.6rem 1.35rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: center;
+}
+.login-card h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+.login-card .field { text-align: left; }
+.login-card .brand-mark.lg { margin-bottom: 0.25rem; }
+.nav-logout { margin-top: auto; color: var(--danger); }
+.nav-logout:hover { background: var(--danger-soft); color: var(--danger); }
+
+body:not(.authed) .app { display: none !important; }
+
 .demo-banner {
   border-color: color-mix(in srgb, #f59e0b 45%, var(--border));
   background:
