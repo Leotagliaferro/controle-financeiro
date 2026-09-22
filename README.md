@@ -48,6 +48,10 @@ Ideal para quem tem salário fixo, freelas e despesas fixas/variáveis e quer sa
 └── README.md
 ```
 
+## Acesso
+
+O site no GitHub Pages tem uma tela de login. A senha **não** fica no repositório (só um hash). Guarde o usuário/senha em local seguro — não commitamos credenciais.
+
 ## Como executar
 
 Não precisa instalar dependências.
